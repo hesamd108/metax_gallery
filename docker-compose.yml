@@ -1,0 +1,60 @@
+services:
+  metax-database:
+    container_name: "metax-database"
+    image: "postgres:latest"
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER=metax_database_admin
+      - POSTGRES_MULTIPLE_DATABASES=metax_platform_db,metax_gallery_db,metax_voice_assistant_db,metax_facelib_db,metax_tti_db,metax_plate_ocr_db,metax_crowd_counter
+      - POSTGRES_PASSWORD=u%pg`Eesa?o'@]]?A"OZ
+    volumes:
+      - ./create_second_db.sh:/docker-entrypoint-initdb.d/create_second_db.sh
+    networks:
+      - backend
+    restart: "on-failure"
+
+  metax-broker:
+    container_name: "metax-broker"
+    image: "redis:latest"
+    privileged: true
+    ports:
+      - "6379:6379"
+    expose:
+      - 6379
+    restart: "on-failure"
+    networks:
+      - backend
+
+  metax-gallery:
+    container_name: "metax-gallery"
+    image: "metax-gallery-image"
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./metax_gallery/media:/code/media
+    environment:
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_PASSWORD=ORgZ3`%0a|<CDKwlqnv}
+      - DJANGO_SUPERUSER_EMAIL=hesam.d108@gmail.com
+      - GATEWAY_SCHEME=http
+      - GATEWAY_HOST=0.0.0.0
+      - GATEWAY_PORT=8003
+      - DATABASE_NAME=metax_gallery_db
+      - DATABASE_USER=metax_database_admin
+      - DATABASE_PASSWORD=u%pg`Eesa?o'@]]?A"OZ
+      - DATABASE_HOST=metax-database
+      - DATABASE_PORT=5432
+      - EXTERNAL_IP_ADDRESS=172.16.60.83
+      - DOMAIN_NAME=mysite.com
+      - DEFAULT_PAGINATION_SIZE=10
+    networks:
+      - backend
+    restart: "on-failure"
+
+networks:
+  backend:
